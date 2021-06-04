@@ -19,7 +19,7 @@ def main():
 		if filename.endswith('.js'):
 			os.mkdir(filename[:-3])
 			copyfile('../index.rsh', filename[:-3] + '/index.rsh')
-			copyfile('../src/' + filename, filename[:-3] + '/challenge.js')
+			copyfile('../src/' + filename, filename[:-3] + '/bountyFunction.rsh')
 			os.chdir(filename[:-3])
 			os.system('../../reach compile')
 			os.chdir('..')
