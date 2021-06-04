@@ -25,14 +25,14 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       
-      - name: Get Added Modified Files
-        id: files
-        uses: jitterbit/get-changed-files@v1
-
-      # Runs a set of commands using the runners shell
-      - name: Compile
+      - name: Build
         run: |
           chmod +x reach
-          for changed_file in ${{ steps.files.outputs.added_modified }}; do
-            python3 script.py "${changed_file}"
-          done
+          python3 build.py
+
+      # Runs a set of commands using the runners shell
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@4.0.0
+        with:
+          branch: gh-pages
+          folder: builds

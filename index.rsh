@@ -1,106 +1,211 @@
-"reach 0.1";
+'reach 0.1';
 
-const [isHand, ROCK, PAPER, SCISSORS] = makeEnum(3);
-const [isOutcome, B_WINS, DRAW, A_WINS] = makeEnum(3);
+const UserEntryType = Object({
+    accountAddress: Address,
+    returnValue: UInt,
+    inputValue: UInt,
+    timestamp: UInt
+});
 
-const winner = (handA, handB) => (handA + (4 - handB)) % 3;
+const LEADERBOARD_SIZE = 3;
 
-// Tests
-assert(winner(ROCK, PAPER) == B_WINS);
-assert(winner(PAPER, ROCK) == A_WINS);
+const CommonInterface =
+{
+    informBounty: Fun([UInt, UInt], Null),
+    //TODO: check how to send leaderboard, perhaps maintain top X in an array
+    //TODO: looks like map doesn't work kek
+    informLeaderboard: Fun([Array(UserEntryType, LEADERBOARD_SIZE)], Null)
+}
 
-assert(winner(PAPER, SCISSORS) == B_WINS);
-assert(winner(SCISSORS, PAPER) == A_WINS);
+const FunderInterface =
+{
+    ...CommonInterface,
+    getBounty: Fun([], Object({
+        deadline: UInt,
+        amt: UInt,
+    })),
+    // bounty: Fun([UInt], UInt)
+}
 
-assert(winner(SCISSORS, ROCK) == B_WINS);
-assert(winner(ROCK, SCISSORS) == A_WINS);
+const ContestantInterface =
+{
+    ...CommonInterface,
+    submitValue: Fun([], Maybe(UInt)),
+    // shouldSubmitValue: Fun([], Bool),
+    informWinner: Fun([Address], Null)
+}
 
-assert(winner(ROCK, ROCK) == DRAW);
-assert(winner(SCISSORS, SCISSORS) == DRAW);
-assert(winner(PAPER, PAPER) == DRAW);
+export const main =
+    Reach.App(
+        {},
+        [Participant('Funder', FunderInterface), ParticipantClass('Contestant', ContestantInterface)],
+        (Funder, Contestant) => {
 
-forall(UInt, (handA) =>
-  forall(UInt, (handB) => assert(isOutcome(winner(handA, handB))))
-);
+            const bountyFunction = (a) => (a % 69);
 
-forall(UInt, (hand) => assert(winner(hand, hand) == DRAW));
-// Tests end
+            Funder.only(() => {
+                const { amt, deadline } = declassify(interact.getBounty());
+            });
+            //TODO: the deadline expression of a timeout clause can be any equation over consensus state. https://docs.reach.sh/guide-timeout.html 
+            Funder.publish(amt, deadline)
+                .pay(amt);
+            // commit();
 
-const Player = {
-  ...hasRandom,
-  getHand: Fun([], UInt),
-  seeOutcome: Fun([UInt], Null),
-  informTimeout: Fun([], Null),
-};
+            each([Contestant], () => {
+                interact.informBounty(amt, deadline);
+            });
 
-const Alice = { ...Player, wager: UInt };
-const Bob = { ...Player, acceptWager: Fun([UInt], Null) };
+            // const initLeaderboard = new Map(UserEntryType);
+            const initLeaderboard = Array.replicate(LEADERBOARD_SIZE, {
+                accountAddress: Funder,
+                returnValue: 0,
+                inputValue: 0,
+                timestamp: 0
+            });
+            // commit();
 
-const DEADLINE = 10;
-export const main = Reach.App(
-  {},
-  [Participant("Alice", Alice), Participant("Bob", Bob)],
-  (A, B) => {
-    // ...
-    const informTimeout = () => {
-      each([A, B], () => {
-        interact.informTimeout();
-      });
-    };
+            const [keepGoing, currentWinner, leaderboard] =
+                //TODO: timestamp is currently ignored kek
+                parallelReduce([true, { accountAddress: Funder, returnValue: 0, inputValue: 0, timestamp: 0 }, initLeaderboard])
+                    .invariant(balance() == amt)
+                    .while(keepGoing)
+                    .case(
+                        Contestant,
+                        (() => {
+                            const value = declassify(interact.submitValue());
+                            return {
+                                // value = declassify(interact.submitValue(ticketPrice));
+                                // return {
 
-    // Alice proposes a wager
-    A.only(() => {
-      const wager = declassify(interact.wager);
-    });
-    A.publish(wager).pay(wager);
-    commit();
+                                when: isSome(value),
+                                msg: value
+                                // }
+                                // if (isSome(value)) {
+                                //     return {
+                                //         when: true,
+                                //         msg: value
+                                //     }
+                                // }
+                                // else {
+                                //     return {
+                                //         when: false
+                                //     }
+                                // }
+                            }
+                        }),
+                        // ((_) => 0),
+                        ((msg) => {
+                            const currentContestant = this;
+                            // const value 
+                            const inputValue = fromSome(msg, 0);
+                            const evaluatedValue = bountyFunction(inputValue);
+                            // previousEntry = leaderboard[currentContestant];
+                            // if (isSome(previousEntry)) {
+                            //     if (evaluatedValue > previousEntry.returnValue) {
+                            const newEntry = {
+                                accountAddress: currentContestant,
+                                inputValue: inputValue,
+                                returnValue: evaluatedValue,
+                                timestamp: 0
+                            };
+                            // const curr = 0;
+                            // leaderboard.forEach((item, index) => {
+                            //     if(item.returnValue < newEntry.returnValue) {
+                            //         find = index;
+                            //     }
+                            // })
+                            // var [index, foundIndex, found, loopLeaderboard] = [0, 0, false, leaderboard];
+                            // const found = false;
+                            // var foundIndex = -1;
+                            // var index = 0;
+                            // const loopLeaderboard = leaderboard.map((item) => {
+                            //     if (foundIndex != -1) {
+                            //         // leaderboard[index] = leaderboard[index - 1];
+                            //         return leaderboard[index - 1];
+                            //         // leaderboard = loopLeaderboard;
+                            //     }
+                            //     else if(leaderboard[index].returnValue < newEntry.returnValue) {
+                            //         [foundIndex, index] = [index, index];
+                            //         return newEntry;
+                            //     }
+                            //     return leaderboard[index];
+                            // })
+                            // invariant(index <= loopLeaderboard.length && foundIndex < loopLeaderboard.length && balance() == amt);
+                            // while (index < loopLeaderboard.length) {
+                            //     // const tempLeaderboard;
+                            //     // const tempFoundIndex;
+                            //     commit();
+                            //     if (found) {
+                            //         // leaderboard[index] = leaderboard[index - 1];
+                            //         // tempLeaderboard = leaderboard.set(index, leaderboard[index - 1]);
+                            //         // tempFoundIndex = foundIndex;
+                            //         [index, loopLeaderboard] = [index + 1, leaderboard.set(index, leaderboard[index - 1])];
+                            //         continue;
+                            //         // leaderboard = loopLeaderboard;
+                            //     }
+                            //     if (leaderboard[index].returnValue < newEntry.returnValue) {
+                            //         // found = true;
+                            //         // tempLeaderboard = leaderboard;
+                            //         // tempFoundIndex = index;
+                            //         [foundIndex, index, found] = [index, index + 1, true];
+                            //         continue;
 
-    // Bob accepts the wager
-    B.only(() => {
-      interact.acceptWager(wager);
-    });
-    B.pay(wager).timeout(DEADLINE, () => closeTo(A, informTimeout));
-    // see no commit here: why?
+                            //     }
+                            //     continue;
+                            // }
+                            // const newLeaderboard = found && foundIndex < loopLeaderboard.length ? loopLeaderboard.set(foundIndex, newEntry) : loopLeaderboard;
 
-    var outcome = DRAW;
+                            // found ?
+                            //     [found, (idx + 1 < newArr.length ? idx + 1 : idx), (idx + 1 < newArr.length ? newArr.set(idx + 1, elem) : newArr)]
+                            //     : (elem.returnValue < newEntry.returnValue ?
+                            //         [true, (idx + 1 < newArr.length ? idx + 1 : idx), newArr.set(idx, newEntry)]
+                            //         : [false, (idx + 1 < newArr.length ? idx + 1 : idx), newArr])
+                            const newLeaderboard = leaderboard;
+                            // const [_, _, newLeaderboard] = leaderboard.reduce([false, 0, leaderboard], ([found, idx, newArr], elem) => {
+                            //     if (found) {
+                            //         if (idx + 1 < newArr.length) {
+                            //             return [found, idx + 1, newArr.set(idx + 1, elem)];
+                            //         } else {
+                            //             return [found, idx, newArr];
+                            //         }
+                            //     } else {
+                            //         if (elem.returnValue < newEntry.returnValue) {
+                            //             if (idx + 1 < newArr.length) {
+                            //                 return [true, idx + 1, newArr.set(idx, newEntry)];
+                            //             } else {
+                            //                 return [false, idx, newArr];
+                            //             }
+                            //         } else {
+                            //             return [false, idx + 1, newArr];
+                            //         }
+                            //     }
+                            // })
+                            // if (foundIndex != -1) {
+                            //     leaderboard[foundIndex] = newEntry;
+                            // }
+                            // leaderboard[currentContestant] = newEntry;
+                            const newWinner = evaluatedValue > currentWinner.returnValue ? newEntry : currentWinner;
 
-    invariant(balance() == 2 * wager && isOutcome(outcome));
-    while (outcome == DRAW) {
-      commit();
-      A.only(() => {
-        const _handA = interact.getHand();
-        const [_commitA, _saltA] = makeCommitment(interact, _handA);
-        const commitA = declassify(_commitA);
-      });
-      A.publish(commitA).timeout(DEADLINE, () => closeTo(B, informTimeout));
-      commit();
+                            //     }
+                            // }
+                            return [true, newWinner, newLeaderboard];
+                        })
+                    )
+                    .timeout(deadline, () => {
+                        Anybody.publish();
+                        return [false, currentWinner, leaderboard];
+                    });
 
-      unknowable(B, A(_handA, _saltA));
-      B.only(() => {
-        const handB = declassify(interact.getHand());
-      });
-      B.publish(handB).timeout(DEADLINE, () => closeTo(A, informTimeout));
-      commit();
 
-      A.only(() => {
-        const [saltA, handA] = declassify([_saltA, _handA]);
-      });
-      A.publish(saltA, handA).timeout(DEADLINE, () =>
-        closeTo(B, informTimeout)
-      );
-      checkCommitment(commitA, saltA, handA);
+            // commit();
 
-      outcome = winner(handA, handB);
-      continue;
-    }
+            Funder.only(() => {
+                interact.informLeaderboard(leaderboard);
+            });
 
-    assert(outcome == A_WINS || outcome == B_WINS);
-    transfer(2 * wager).to(outcome == A_WINS ? A : B);
-    commit();
+            transfer(balance()).to(currentWinner.accountAddress);
+            commit();
 
-    each([A, B], () => {
-      interact.seeOutcome(outcome);
-    });
-    exit();
-  }
-);
+            exit();
+        }
+    );
