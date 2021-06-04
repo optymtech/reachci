@@ -24,9 +24,15 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+      
+      - name: Get Added Modified Files
+        id: files
+        uses: jitterbit/get-changed-files@v1
 
       # Runs a set of commands using the runners shell
       - name: Compile
         run: |
           chmod +x reach
-          ./reach compile index.rsh
+          for changed_file in ${{ steps.files.outputs.added_modified }}; do
+            python3 script.py "${changed_file}"
+          done
