@@ -1,6 +1,6 @@
 'reach 0.1';
 
-import { bountyFunction } from 'bountyFunction.rsh';
+// import { bountyFunction } from 'bountyFunction.rsh';
 
 const UserEntryType = Object({
     accountAddress: Address,
