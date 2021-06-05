@@ -1,1 +1,0 @@
-'reach 0.1'export function bountyFunction(i) {  return - i * i + 4 * i + 17;}
