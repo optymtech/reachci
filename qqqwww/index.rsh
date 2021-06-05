@@ -1,6 +1,6 @@
 'reach 0.1';
 
-// import { bountyFunction } from 'bountyFunction.rsh';
+import { bountyFunction } from 'bountyFunction.rsh';
 
 const UserEntryType = Object({
     accountAddress: Address,
@@ -43,7 +43,7 @@ export const main =
         [Participant('Funder', FunderInterface), ParticipantClass('Contestant', ContestantInterface)],
         (Funder, Contestant) => {
 
-            const bountyFunction = (a) => (a % 69);
+            // const bountyFunction = (a) => (a % 69);
 
             Funder.only(() => {
                 const { amt, deadline } = declassify(interact.getBounty());
