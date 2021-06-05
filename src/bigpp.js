@@ -1,1 +1,0 @@
-function challenge(i) {  // yes pliz gib me moni  return - i * i + 4 * i + 69;}
