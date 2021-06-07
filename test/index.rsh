@@ -26,6 +26,7 @@ const FunderInterface =
         deadline: UInt,
         amt: UInt,
     })),
+    postWager: Fun([], Null),
     // bounty: Fun([UInt], UInt)
 }
 
@@ -52,6 +53,10 @@ export const main =
             Funder.publish(amt, deadline)
                 .pay(amt);
             // commit();
+
+            Funder.only(() => {
+                interact.postWager();
+            })
 
             each([Contestant], () => {
                 interact.informBounty(amt, deadline);
