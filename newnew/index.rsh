@@ -125,7 +125,4 @@ export const main =
             exit();
         }
     );
-toucan-icon
-Over 100 word limit
-We’re working to increase this limit and keep load times short. In the meantime, try highlighting up to 100 words at one time to translate.
-Don’t show again
+
