@@ -35,7 +35,8 @@ const ContestantInterface =
     ...CommonInterface,
     submitValue: Fun([], Maybe(UInt)),
     // shouldSubmitValue: Fun([], Bool),
-    informWinner: Fun([Address], Null)
+    informWinner: Fun([Address], Null),
+    informSucc: Fun([Bool], Null),
 }
 
 export const main =
@@ -103,6 +104,7 @@ export const main =
                         // ((_) => 0),
                         ((msg) => {
                             const currentContestant = this;
+                            Contestant.only(() => interact.informSucc(true));
                             // const value 
                             const inputValue = fromSome(msg, 0);
                             const evaluatedValue = bountyFunction(inputValue);
