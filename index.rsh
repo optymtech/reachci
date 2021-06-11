@@ -87,7 +87,7 @@ export const main =
                             const currentContestant = this;
                             const inputValue = fromSome(msg, 0);
                             const evaluatedValue = bountyFunction(inputValue);
-                            Monitor.only(() => interact.seeSubmission(this, inputValue, evaluatedValue))
+                            Monitor.only(() => interact.seeSubmission(currentContestant, inputValue, evaluatedValue))
                             const newEntry = {
                                 accountAddress: currentContestant,
                                 inputValue: inputValue,
