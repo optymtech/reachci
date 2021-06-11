@@ -32,7 +32,8 @@ jobs:
       - name: Build
         run: |
           chmod +x reach
-          mkdir build
+          git clone --single-branch --branch gh-pages https://github.com/optymtech/reachci build
+          rm -rf build/.git
           for changed_file in ${{ steps.files.outputs.added_modified }}; do
             python3 build.py "${changed_file}"
           done
