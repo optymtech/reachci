@@ -8,11 +8,7 @@ import zipfile
 from shutil import copyfile
 
 def main():
-	
-	try:
-		os.mkdir('build')
-	except OSError as error:
-		pass
+
 	os.chdir('build')
 
 	pathname = sys.argv[1]
