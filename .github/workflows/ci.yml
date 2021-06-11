@@ -2,13 +2,13 @@
 
 name: CI
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -24,11 +24,17 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      
+
+      - name: Get Added Modified Files
+        id: files
+        uses: jitterbit/get-changed-files@v1
+
       - name: Build
         run: |
           chmod +x reach
-          python3 build.py
+          for changed_file in ${{ steps.files.outputs.added_modified }}; do
+            python3 build.py "${changed_file}"
+          done
 
       # Runs a set of commands using the runners shell
       - name: Deploy
