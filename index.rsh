@@ -82,7 +82,6 @@ export const main =
                         }),
                         ((msg) => {
                             const currentContestant = this;
-                            Contestant.only(() => interact.informSuccess(true))
                             const inputValue = fromSome(msg, 0);
                             const evaluatedValue = bountyFunction(inputValue);
                             const newEntry = {
@@ -116,6 +115,7 @@ export const main =
                                 Contestant.publish();
                             }
                             const newWinner = evaluatedValue > currentWinner.returnValue ? newEntry : currentWinner;
+                            Contestant.only(() => interact.informSuccess(true));
                             return [true, newWinner, newLeaderboard];
                         })
                     )
