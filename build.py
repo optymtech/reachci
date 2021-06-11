@@ -5,7 +5,7 @@ import sys
 import json
 # import requests
 import zipfile
-from shutil import copyfile
+from shutil import copyfile, rmtree
 
 def main():
 
@@ -18,6 +18,10 @@ def main():
 	
 	filename = os.path.basename(pathname)
 	if filename.endswith('.js'):
+		try:
+			rmtree(filename[:-3])
+		except:
+			pass
 		os.mkdir(filename[:-3])
 		copyfile('../index.rsh', filename[:-3] + '/index.rsh')
 		copyfile('../src/' + filename, filename[:-3] + '/bountyFunction.rsh')
