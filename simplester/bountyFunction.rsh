@@ -3,3 +3,4 @@
 export function bountyFunction(i) {
   return i % 42;
 }
+
